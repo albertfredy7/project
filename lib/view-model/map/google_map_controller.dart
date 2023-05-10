@@ -12,21 +12,41 @@ import 'package:location/location.dart' as Location;
 class GoogleMapProvider extends ChangeNotifier {
   final Completer<GoogleMapController> controller = Completer();
 
-  LatLng sourceLocation = LatLng(10.495421071158342, 76.24565805104527);
-  LatLng destination = LatLng(10.50038993265248, 76.25123483398062);
+  LatLng sourceLocation = LatLng(10.727631644072261, 76.28998265434156);
+  LatLng destination = LatLng(10.727631654072261, 76.29998265434156);
+  // LatLng markerPosititon = LatLng(10.727631644072261, 76.28998265434156);
 
   late BitmapDescriptor currentLocationIcon;
-  LatLng center = const LatLng(40.7128, -74.0060);
+  LatLng center = const LatLng(10.727631644072261, 76.28998265434156);
 
   List<LatLng> polylineCoordinates = [];
   Geolocator.Position? currentLocation;
   Duration? estimatedTime;
   bool isLoading = false;
+  bool noEmergency = true;
+  PolylinePoints polylinePoints = PolylinePoints();
+  double distance = 0;
+
+  onMapTapped(LatLng argument) async {
+    noEmergency = false;
+    destination = argument;
+    // polylineCoordinates = [destination, sourceLocation];
+    await estimateTravelTime(polylineCoordinates);
+    await getPolyPoints();
+    notifyListeners();
+  }
+
+  onCancel() {
+    polylineCoordinates.clear();
+    estimatedTime = Duration.zero;
+    noEmergency = true;
+    notifyListeners();
+  }
 
   Future<void> getCurrentLocation() async {
     Location.Location location = Location.Location();
     bool isLocationEnabled = await location.serviceEnabled();
-     log("isLocationEnabled : $isLocationEnabled");
+    log("isLocationEnabled : $isLocationEnabled");
 
     if (!isLocationEnabled) {
       bool enableResult = await location.requestService();
@@ -42,26 +62,35 @@ class GoogleMapProvider extends ChangeNotifier {
         return;
       }
     }
-     log("location permission status : $permissionStatus");
+    // log("location permission status : $permissionStatus");
 
     Geolocator.Geolocator geolocator = Geolocator.Geolocator();
     Geolocator.Position position =
         await Geolocator.Geolocator.getCurrentPosition(
             desiredAccuracy: Geolocator.LocationAccuracy.high);
-    log('current position : $position');
+    // log('current position : $position');
 
     currentLocation = position;
     notifyListeners();
-    center = LatLng(position.latitude, position.longitude);
+    center = LatLng(10.727631644072261, 76.28998265434156);
+    // LatLng(position.latitude, position.longitude);
     notifyListeners();
   }
 
   Future<Duration> estimateTravelTime(List<LatLng> polylineCoordinates) async {
-    double distance = 0;
+    if (estimatedTime != null) {
+      estimatedTime = null;
+      distance = 0;
+      notifyListeners();
+    }
 
-    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-      LatLng start = polylineCoordinates[i];
-      LatLng end = polylineCoordinates[i + 1];
+    // log('poly length ; ${polylineCoordinates}');
+
+    for (int i = 0; i < polylineCoordinates.length; i++) {
+      // log('loop started');
+      // log('PLY ${polylineCoordinates[i]}');
+      LatLng start = polylineCoordinates[0];
+      LatLng end = polylineCoordinates[1];
       distance += Geolocator.Geolocator.distanceBetween(
         start.latitude,
         start.longitude,
@@ -69,6 +98,8 @@ class GoogleMapProvider extends ChangeNotifier {
         end.longitude,
       );
     }
+
+    // log('distance $distance');
 
     Geolocator.Position currentPosition =
         await Geolocator.Geolocator.getCurrentPosition(
@@ -85,10 +116,13 @@ class GoogleMapProvider extends ChangeNotifier {
         ) /
         (averageSpeed * 1000);
 
+    log('$distance ${currentPosition.latitude}, ${currentPosition.longitude},${polylineCoordinates.last.latitude},${polylineCoordinates.last.longitude},}');
     int timeToDestinationInMinutes = (timeToDestinationInHours * 60).round();
 
     double estimatedTimeInHours = distance / (averageSpeed * 1000);
     int estimatedTimeInMinutes = (estimatedTimeInHours * 60).round();
+
+    log('$estimatedTimeInHours = ($distance / ($averageSpeed * 1000) \n time in hour :$estimatedTimeInHours \n time in minute : $estimatedTimeInMinutes');
 
     estimatedTime = Duration(
         hours: estimatedTimeInHours.toInt(), minutes: estimatedTimeInMinutes);
@@ -100,7 +134,11 @@ class GoogleMapProvider extends ChangeNotifier {
   }
 
   Future<void> getPolyPoints() async {
-    PolylinePoints polylinePoints = PolylinePoints();
+    if (polylineCoordinates.isNotEmpty) {
+      polylineCoordinates.clear();
+      notifyListeners();
+    }
+
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       google_api_key,
       PointLatLng(sourceLocation.latitude, sourceLocation.longitude),

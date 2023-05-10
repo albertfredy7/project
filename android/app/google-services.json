@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "964027951802",
+    "project_id": "resq-main",
+    "storage_bucket": "resq-main.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964027951802:android:8a7ad0ae7466d60a883083",
+        "android_client_info": {
+          "package_name": "com.example.google_mao"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "964027951802-vbcp3hl5nb117l19ti6l8dldutss97ah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdjsRkij6kkEx3Bh57doAVEAinny-Qb58"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "964027951802-vbcp3hl5nb117l19ti6l8dldutss97ah.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "964027951802-ahor6vn1qbt5tuafb6301bl5812ns36p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.resqmain"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964027951802:android:4973a1539cb07aba883083",
+        "android_client_info": {
+          "package_name": "com.mycompany.resqmain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "964027951802-a5tf63200ed4qmb21bag71bdb7j9c2vg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.resqmain",
+            "certificate_hash": "d1ed20fbae3066a27e552ef57d4ac38c7b96b69e"
+          }
+        },
+        {
+          "client_id": "964027951802-jh7m1mk1ud15bi0u0bpcimvgq6tn093u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.resqmain",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "964027951802-vbcp3hl5nb117l19ti6l8dldutss97ah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdjsRkij6kkEx3Bh57doAVEAinny-Qb58"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "964027951802-vbcp3hl5nb117l19ti6l8dldutss97ah.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "964027951802-ahor6vn1qbt5tuafb6301bl5812ns36p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.resqmain"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

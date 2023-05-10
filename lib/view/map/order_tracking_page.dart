@@ -1,20 +1,12 @@
-import 'dart:async';
 import 'dart:developer';
-import 'dart:math' show cos, sqrt, asin, distanceBetween;
-
-import 'package:geolocator/geolocator.dart' as Geolocator;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_mao/core/constants.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart' as Location;
-import 'dart:ui' as ui;
 
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
-import '../view-model/google_map_controller.dart';
+import '../../view-model/map/google_map_controller.dart';
 
 class OrderTrackingPage extends StatefulWidget {
   const OrderTrackingPage({Key? key}) : super(key: key);
@@ -30,7 +22,8 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
     googleMapProvider = Provider.of<GoogleMapProvider>(context, listen: false);
     googleMapProvider.getCurrentLocation();
     googleMapProvider.getPolyPoints();
-    googleMapProvider.estimateTravelTime([googleMapProvider.center]);
+    googleMapProvider.estimateTravelTime(
+        [googleMapProvider.sourceLocation, googleMapProvider.destination]);
     googleMapProvider.loadCurrentLocationIcon();
     super.initState();
   }
@@ -60,30 +53,38 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                         target: value.center,
                         zoom: 14.5,
                       ),
-                      polylines: {
-                        Polyline(
-                          polylineId: const PolylineId("route"),
-                          points: value.polylineCoordinates,
-                          color: primaryColor,
-                          width: 6,
-                        ),
+                      polylines: value.noEmergency
+                          ? const <Polyline>{}
+                          : {
+                              Polyline(
+                                polylineId: const PolylineId("route"),
+                                points: value.polylineCoordinates,
+                                color: primaryColor,
+                                width: 6,
+                              ),
+                            },
+                      onTap: (argument) {
+                        value.onMapTapped(argument);
                       },
                       markers: {
                         Marker(
                             markerId: const MarkerId("currentLocation"),
-                            position: LatLng(
-                              value.currentLocation!.latitude,
-                              value.currentLocation!.longitude,
-                            ),
+                            position: const LatLng(
+                                10.727631644072261, 76.28998265434156
+                                // value.currentLocation!.latitude,
+                                // value.currentLocation!.longitude,
+                                ),
                             icon: value.currentLocationIcon),
-                        Marker(
-                          markerId: const MarkerId("source"),
-                          position: value.sourceLocation,
-                        ),
-                        Marker(
-                          markerId: const MarkerId("destination"),
-                          position: value.destination,
-                        ),
+                        if (!value.noEmergency)
+                          Marker(
+                            markerId: const MarkerId("source"),
+                            position: value.sourceLocation,
+                          ),
+                        if (!value.noEmergency)
+                          Marker(
+                            markerId: const MarkerId("destination"),
+                            position: value.destination,
+                          ),
                       },
                     ),
                     Positioned(
@@ -97,18 +98,26 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              value.estimatedTime == null
-                                  ? "Calculating..."
-                                  : "Estimated time: ${value.estimatedTime!.inMinutes} mins",
+                              value.noEmergency
+                                  ? 'No Emergency'
+                                  : value.estimatedTime == null
+                                      ? "Calculating..."
+                                      : "Estimated time: ${value.estimatedTime!.inMinutes} mins",
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ElevatedButton(
-                              onPressed: () {},
-                              child: const Text("Cancel"),
-                            ),
+                            !value.noEmergency
+                                ? ElevatedButton(
+                                    onPressed: () {
+                                      value.onCancel();
+                                    },
+                                    child: const Text("Cancel"),
+                                  )
+                                : const SizedBox(
+                                    height: 50,
+                                  )
                           ],
                         ),
                       ),
