@@ -69,6 +69,8 @@ class AuthneticationController extends ChangeNotifier {
             timeInSecForIosWeb: 1,
             fontSize: 16.0,
           );
+          verificationID = '';
+          notifyListeners();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -86,5 +88,15 @@ class AuthneticationController extends ChangeNotifier {
         }
       },
     );
+  }
+
+  Future<String> logOut(BuildContext context) async {
+    try {
+      await auth.signOut();
+      return 'succes';
+    } catch (e) {
+      log('error caught on signing out : $e');
+      return 'failure';
+    }
   }
 }

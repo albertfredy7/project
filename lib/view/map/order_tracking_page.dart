@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:google_mao/core/constants.dart';
+import 'package:google_mao/view-model/auth/authentication_controller.dart';
+import 'package:google_mao/view/auth/phone_number_authentication.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:provider/provider.dart';
@@ -30,19 +32,52 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) async {
-
-    // });
+    final authProvider =
+        Provider.of<AuthneticationController>(context, listen: false);
 
     return Consumer<GoogleMapProvider>(
       builder: (context, value, child) {
         log('curernt location from UI ${value.currentLocation}');
         return Scaffold(
           appBar: AppBar(
-            title: const Text(
-              "Accident",
-              style: TextStyle(color: Colors.black, fontSize: 16),
-            ),
+            title: Image.asset(appIcon, height: 20,),
+            iconTheme: const IconThemeData(color: Colors.black),
+            actions: [
+              IconButton(
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text(
+                            'Are you sure you want to logout from this app?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Cancel')),
+                          TextButton(
+                              onPressed: () async {
+                                final status =
+                                    await authProvider.logOut(context);
+
+                                if (context.mounted) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const PhoneAuth(),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Yes')),
+                        ],
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.logout)),
+            ],
           ),
           body: value.currentLocation == null
               ? const Center(child: Text("Loading"))
@@ -95,7 +130,9 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                         color: Colors.white,
                         padding: const EdgeInsets.all(16),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: value.noEmergency
+                              ? MainAxisAlignment.center
+                              : MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               value.noEmergency
