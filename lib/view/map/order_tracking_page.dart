@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:google_mao/Models/location_model.dart';
 import 'package:google_mao/core/constants.dart';
+import 'package:google_mao/functions/app_functions.dart';
 import 'package:google_mao/view-model/auth/authentication_controller.dart';
 import 'package:google_mao/view/auth/phone_number_authentication.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -40,7 +42,10 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
         log('curernt location from UI ${value.currentLocation}');
         return Scaffold(
           appBar: AppBar(
-            title: Image.asset(appIcon, height: 20,),
+            title: Image.asset(
+              appIcon,
+              height: 20,
+            ),
             iconTheme: const IconThemeData(color: Colors.black),
             actions: [
               IconButton(
@@ -98,9 +103,9 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                                 width: 6,
                               ),
                             },
-                      onTap: (argument) {
-                        value.onMapTapped(argument);
-                      },
+                      // onTap: (argument) {
+                      //   value.onMapTapped(argument);
+                      // },
                       markers: {
                         Marker(
                             markerId: const MarkerId("currentLocation"),
@@ -127,40 +132,150 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                       right: 0,
                       bottom: 0,
                       child: Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: value.noEmergency
-                              ? MainAxisAlignment.center
-                              : MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              value.noEmergency
-                                  ? 'No Emergency'
-                                  : value.estimatedTime == null
-                                      ? "Calculating..."
-                                      : "Estimated time: ${value.estimatedTime!.inMinutes} mins",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          height: value.emergencyShowingContainerHeight,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              )),
+                          padding: const EdgeInsets.all(16),
+                          child:
+                              // Row(
+                              //   mainAxisAlignment: value.noEmergency
+                              //       ? MainAxisAlignment.center
+                              //       : MainAxisAlignment.spaceBetween,
+                              //   children: [
+                              // Text(
+                              //   value.noEmergency
+                              //       ? 'No Emergency'
+                              //       : value.estimatedTime == null
+                              //           ? "Calculating..."
+                              //           : "Estimated time: ${value.estimatedTime!.inMinutes} mins",
+                              //   style: const TextStyle(
+                              //     fontSize: 18,
+                              //     fontWeight: FontWeight.bold,
+                              //   ),
+                              // ),
+                              // !value.noEmergency
+                              //     ? ElevatedButton(
+                              //         onPressed: () {
+                              //           value.onCancel();
+                              //         },
+                              //         child: const Text("Cancel"),
+                              //       )
+                              //     : const SizedBox(
+                              //         height: 50,
+                              //       )
+                              //   ],
+                              // ),
+                              SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                SizedBox(height: 10),
+                                Text(
+                                  value.noEmergency
+                                      ? "Refresh to see accidents"
+                                      : "Emergency Alert !",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 30),
+                                Container(
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(10)),
+                                  padding: EdgeInsets.only(left: 20, right: 10),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        value.estimatedTime == null
+                                            ? "Calculating..."
+                                            : "Estimmated Time : ${value.estimatedTime!.inMinutes} min",
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Spacer(),
+                                      GestureDetector(
+                                        onTap: () {
+                                          print("inspact button tapped");
+                                          value.onInspectButtonTapped();
+                                        },
+                                        child: Container(
+                                          height: 50,
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(15)),
+                                          child: Center(
+                                            child: Text(
+                                              "Inspect",
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Color.fromARGB(
+                                                      255, 255, 56, 106)),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
                             ),
-                            !value.noEmergency
-                                ? ElevatedButton(
-                                    onPressed: () {
-                                      value.onCancel();
-                                    },
-                                    child: const Text("Cancel"),
-                                  )
-                                : const SizedBox(
-                                    height: 50,
-                                  )
-                          ],
-                        ),
-                      ),
+                          )),
                     ),
                   ],
                 ),
+          floatingActionButton: Padding(
+              padding: EdgeInsets.only(bottom: 100),
+              child: FloatingActionButton(
+                onPressed: () async {
+                  String locationresponseString =
+                      await AppApiFunctions.fetchData();
+                  if (locationresponseString != "errror") {
+                    print("not error received");
+                    locationResponseModelClassFromJson(locationresponseString);
+                    // checking the conditions
+                    if (locationResponseModelClassFromJson(
+                                locationresponseString)
+                            .longitude
+                            .isNotEmpty &&
+                        locationResponseModelClassFromJson(
+                                locationresponseString)
+                            .latitude
+                            .isNotEmpty) {
+                      // setting destination value in the provider class
+
+                      await value.setDestinationValue(
+                          longitude: double.parse(
+                              locationResponseModelClassFromJson(
+                                      locationresponseString)
+                                  .longitude),
+                          latitude: double.parse(
+                              locationResponseModelClassFromJson(
+                                      locationresponseString)
+                                  .latitude));
+
+                      // calling the refreshing button
+                      value.onRefreshedAndFoundLocation(
+                          longitude: locationResponseModelClassFromJson(
+                                  locationresponseString)
+                              .longitude,
+                          latitude: locationResponseModelClassFromJson(
+                                  locationresponseString)
+                              .latitude);
+                    }
+                  }
+                },
+                child: Center(child: Text("Refresh")),
+              )),
         );
       },
     );

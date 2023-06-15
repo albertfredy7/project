@@ -26,13 +26,73 @@ class GoogleMapProvider extends ChangeNotifier {
   bool noEmergency = true;
   PolylinePoints polylinePoints = PolylinePoints();
   double distance = 0;
+  double emergencyShowingContainerHeight = 60;
 
-  onMapTapped(LatLng argument) async {
-    noEmergency = false;
-    destination = argument;
-    // polylineCoordinates = [destination, sourceLocation];
+  // onMapTapped(LatLng argument) async {
+  //   noEmergency = false;
+  //   destination = argument;
+  //   // polylineCoordinates = [destination, sourceLocation];
+  //   await estimateTravelTime(polylineCoordinates);
+  //   await getPolyPoints();
+  //   notifyListeners();
+  // }
+
+  onInspectButtonTapped() async {
+    print("updating location");
+
+    // destination = LatLng(double.parse(latitude), double.parse(longitude));
+    polylineCoordinates.clear();
+
+    print("printing the currrent and destination location");
+    print("$destination $sourceLocation");
+    polylineCoordinates
+        .addAll([destination, LatLng(10.727552099880127, 76.28994973951815)]);
+
     await estimateTravelTime(polylineCoordinates);
     await getPolyPoints();
+    notifyListeners();
+  }
+
+  setDestinationValue({required double longitude, required double latitude}) {
+    destination = LatLng(latitude, longitude);
+    notifyListeners();
+  }
+
+  onRefreshedAndFoundLocation(
+      {required String longitude, required String latitude}) async {
+    print("updating location");
+    noEmergency = false;
+    emergencyShowingContainerHeight = 160;
+
+    destination = LatLng(double.parse(latitude), double.parse(longitude));
+    // sourceLocation = destination; // Set the source location as the destination
+
+    // Clear the existing polylineCoordinates list
+    polylineCoordinates.clear();
+
+    // Add the destination coordinate to the polylineCoordinates list
+    // polylineCoordinates.add(destination);
+
+    // Notify listeners to update the UI
+    notifyListeners();
+  }
+
+  //
+
+  Future<void> showPolylinesToLocation(LatLng location) async {
+    // // Clear the existing polylineCoordinates list
+    // polylineCoordinates.clear();
+
+    // // Set the destination coordinate
+    // destination = location;
+
+    // // Add the source and destination coordinates to the polylineCoordinates list
+    // polylineCoordinates.addAll([sourceLocation, destination]);
+
+    await estimateTravelTime(polylineCoordinates);
+    await getPolyPoints();
+
+    // // Notify listeners to update the UI
     notifyListeners();
   }
 
@@ -40,6 +100,8 @@ class GoogleMapProvider extends ChangeNotifier {
     polylineCoordinates.clear();
     estimatedTime = Duration.zero;
     noEmergency = true;
+    emergencyShowingContainerHeight = 60;
+
     notifyListeners();
   }
 
