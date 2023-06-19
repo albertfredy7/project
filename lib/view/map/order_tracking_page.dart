@@ -42,9 +42,49 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
         log('curernt location from UI ${value.currentLocation}');
         return Scaffold(
           appBar: AppBar(
-            title: Image.asset(
-              appIcon,
-              height: 20,
+            title: GestureDetector(
+              onTap: () async {
+                String locationresponseString =
+                    await AppApiFunctions.fetchData();
+                value.setInspectedAsFalse();
+
+                if (locationresponseString != "errror") {
+                  print("not error received");
+                  locationResponseModelClassFromJson(locationresponseString);
+                  // checking the conditions
+                  if (locationResponseModelClassFromJson(locationresponseString)
+                          .longitude
+                          .isNotEmpty &&
+                      locationResponseModelClassFromJson(locationresponseString)
+                          .latitude
+                          .isNotEmpty) {
+                    // setting destination value in the provider class
+
+                    await value.setDestinationValue(
+                        longitude: double.parse(
+                            locationResponseModelClassFromJson(
+                                    locationresponseString)
+                                .longitude),
+                        latitude: double.parse(
+                            locationResponseModelClassFromJson(
+                                    locationresponseString)
+                                .latitude));
+
+                    // calling the refreshing button
+                    value.onRefreshedAndFoundLocation(
+                        longitude: locationResponseModelClassFromJson(
+                                locationresponseString)
+                            .longitude,
+                        latitude: locationResponseModelClassFromJson(
+                                locationresponseString)
+                            .latitude);
+                  }
+                }
+              },
+              child: Image.asset(
+                appIcon,
+                height: 20,
+              ),
             ),
             iconTheme: const IconThemeData(color: Colors.black),
             actions: [
@@ -175,7 +215,7 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                                 SizedBox(height: 10),
                                 Text(
                                   value.noEmergency
-                                      ? "Refresh to see accidents"
+                                      ? "No Accidents Detected"
                                       : "Emergency Alert !",
                                   style: TextStyle(
                                       fontSize: 18,
@@ -200,30 +240,35 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                                             fontWeight: FontWeight.bold),
                                       ),
                                       Spacer(),
-                                      GestureDetector(
-                                        onTap: () {
-                                          print("inspact button tapped");
-                                          value.onInspectButtonTapped();
-                                        },
-                                        child: Container(
-                                          height: 50,
-                                          width: 100,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(15)),
-                                          child: Center(
-                                            child: Text(
-                                              "Inspect",
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Color.fromARGB(
-                                                      255, 255, 56, 106)),
-                                            ),
-                                          ),
-                                        ),
-                                      )
+                                      value.inspectButtonPressed
+                                          ? Container()
+                                          : GestureDetector(
+                                              onTap: () {
+                                                print("inspact button tapped");
+                                                value.onInspectButtonTapped();
+                                                value.setInspectedAsTrue();
+                                              },
+                                              child: Container(
+                                                height: 50,
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15)),
+                                                child: Center(
+                                                  child: Text(
+                                                    "Inspect",
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        color: Color.fromARGB(
+                                                            255, 255, 56, 106)),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
                                     ],
                                   ),
                                 )
@@ -233,49 +278,6 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
                     ),
                   ],
                 ),
-          floatingActionButton: Padding(
-              padding: EdgeInsets.only(bottom: 100),
-              child: FloatingActionButton(
-                onPressed: () async {
-                  String locationresponseString =
-                      await AppApiFunctions.fetchData();
-                  if (locationresponseString != "errror") {
-                    print("not error received");
-                    locationResponseModelClassFromJson(locationresponseString);
-                    // checking the conditions
-                    if (locationResponseModelClassFromJson(
-                                locationresponseString)
-                            .longitude
-                            .isNotEmpty &&
-                        locationResponseModelClassFromJson(
-                                locationresponseString)
-                            .latitude
-                            .isNotEmpty) {
-                      // setting destination value in the provider class
-
-                      await value.setDestinationValue(
-                          longitude: double.parse(
-                              locationResponseModelClassFromJson(
-                                      locationresponseString)
-                                  .longitude),
-                          latitude: double.parse(
-                              locationResponseModelClassFromJson(
-                                      locationresponseString)
-                                  .latitude));
-
-                      // calling the refreshing button
-                      value.onRefreshedAndFoundLocation(
-                          longitude: locationResponseModelClassFromJson(
-                                  locationresponseString)
-                              .longitude,
-                          latitude: locationResponseModelClassFromJson(
-                                  locationresponseString)
-                              .latitude);
-                    }
-                  }
-                },
-                child: Center(child: Text("Refresh")),
-              )),
         );
       },
     );

@@ -27,6 +27,7 @@ class GoogleMapProvider extends ChangeNotifier {
   PolylinePoints polylinePoints = PolylinePoints();
   double distance = 0;
   double emergencyShowingContainerHeight = 60;
+  bool inspectButtonPressed = false;
 
   // onMapTapped(LatLng argument) async {
   //   noEmergency = false;
@@ -77,6 +78,15 @@ class GoogleMapProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  setInspectedAsTrue() {
+    inspectButtonPressed = true;
+    notifyListeners();
+  }
+
+  setInspectedAsFalse() {
+    inspectButtonPressed = false;
+    notifyListeners();
+  }
   //
 
   Future<void> showPolylinesToLocation(LatLng location) async {
